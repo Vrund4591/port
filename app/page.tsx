@@ -31,9 +31,7 @@ export default function Home() {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-8 py-6 flex justify-between items-center">
         <div className="text-xl font-mono">
-          <span className="text-[#D2B450]">&lt;</span>
-          <span className="text-[#FFFFF0]">dev</span>
-          <span className="text-[#D2B450]">/&gt;</span>
+          <img src="/logo.png" alt="Logo" className="h-24 w-auto" />
         </div>
         <ul className="flex gap-8 font-mono text-sm">
           <li><a href="#about" className="hover:text-[#D2B450] transition-colors">About</a></li>
