@@ -18,8 +18,10 @@ export default function ThemeProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [theme, setTheme] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "light";
+    return document.documentElement.classList.contains("dark") ? "dark" : "light";
+  });
 
   useEffect(() => {
     const stored = localStorage.getItem("theme") as Theme | null;
@@ -27,7 +29,6 @@ export default function ThemeProvider({
     const initial = stored || (prefersDark ? "dark" : "light");
     setTheme(initial);
     document.documentElement.classList.toggle("dark", initial === "dark");
-    setMounted(true);
   }, []);
 
   const toggleTheme = () => {
@@ -42,9 +43,7 @@ export default function ThemeProvider({
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      <div style={{ opacity: mounted ? 1 : 0, transition: "opacity 0.2s ease" }}>
-        {children}
-      </div>
+      {children}
     </ThemeContext.Provider>
   );
 }
