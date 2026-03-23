@@ -51,7 +51,6 @@ const projects = [
 export default function Projects() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
-  const initRef = useRef(false);
 
   const initScroll = useCallback(() => {
     const section = sectionRef.current;
@@ -59,15 +58,19 @@ export default function Projects() {
     if (!section || !track) return;
     if (typeof window === "undefined") return;
 
-    // Kill any existing ScrollTriggers on this element
+    // Kill existing triggers bound to this section and its children before rebuilding.
     ScrollTrigger.getAll().forEach((st) => {
-      if (st.trigger === section || st.vars?.trigger === section) {
+      const triggerEl = st.trigger as Element | undefined;
+      if (triggerEl && (triggerEl === section || section.contains(triggerEl))) {
         st.kill();
       }
     });
 
     // Only do horizontal scroll on desktop
-    if (window.innerWidth < 768) return;
+    if (window.innerWidth < 768) {
+      gsap.set(track, { x: 0 });
+      return;
+    }
 
     // Force layout calc
     const totalWidth = track.scrollWidth;
@@ -138,9 +141,6 @@ export default function Projects() {
   }, []);
 
   useEffect(() => {
-    if (initRef.current) return;
-    initRef.current = true;
-
     // Wait for fonts and layout to settle
     const timer = setTimeout(() => {
       initScroll();
@@ -176,13 +176,19 @@ export default function Projects() {
       });
     }, section);
 
+    let resizeTimer: ReturnType<typeof setTimeout> | null = null;
     const handleResize = () => {
-      ScrollTrigger.refresh(true);
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        initScroll();
+        ScrollTrigger.refresh(true);
+      }, 180);
     };
     window.addEventListener("resize", handleResize);
 
     return () => {
       clearTimeout(timer);
+      if (resizeTimer) clearTimeout(resizeTimer);
       window.removeEventListener("resize", handleResize);
       ctx.revert();
     };

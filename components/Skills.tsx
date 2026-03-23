@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import FloatingSticker from "./FloatingSticker";
 import TechCoin from "./TechCoin";
@@ -38,10 +38,27 @@ function MarqueeRow({
 }) {
   const rowRef = useRef<HTMLDivElement>(null);
   const tweenRef = useRef<gsap.core.Tween | null>(null);
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReducedMotion(media.matches);
+    sync();
+
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
 
   useEffect(() => {
     const row = rowRef.current;
     if (!row) return;
+
+    if (reducedMotion) {
+      gsap.set(row, { xPercent: 0 });
+      return;
+    }
 
     const ctx = gsap.context(() => {
       if (direction === "left") {
@@ -63,17 +80,19 @@ function MarqueeRow({
     });
 
     return () => ctx.revert();
-  }, [direction, duration]);
+  }, [direction, duration, reducedMotion]);
 
   const handleMouseEnter = () => {
+    if (reducedMotion) return;
     if (tweenRef.current) gsap.to(tweenRef.current, { timeScale: 0, duration: 0.5 });
   };
   const handleMouseLeave = () => {
+    if (reducedMotion) return;
     if (tweenRef.current) gsap.to(tweenRef.current, { timeScale: 1, duration: 0.5 });
   };
 
-  // Duplicate skills for seamless loop
-  const allSkills = [...skills, ...skills];
+  // Duplicate skills for seamless loop unless reduced motion is requested.
+  const allSkills = reducedMotion ? skills : [...skills, ...skills];
 
   return (
     <div className="overflow-hidden">
