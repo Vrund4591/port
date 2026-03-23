@@ -53,28 +53,36 @@ function PhysicsCanvas() {
   const bodiesRef = useRef<PhysicsBody[]>([]);
   const animRef = useRef<number>(0);
   const spawnedRef = useRef(false);
+  const boundsRef = useRef({ width: 0, height: 0 });
   const [bodies, setBodies] = useState<PhysicsBody[]>([]);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const width = container.offsetWidth;
-    const height = 600;
+    const updateBounds = () => {
+      boundsRef.current.width = container.offsetWidth;
+      boundsRef.current.height = container.offsetHeight;
+    };
+
+    updateBounds();
+
+    const isMobile = window.innerWidth < 768;
     const gravity = 0.55;
     const bounce = 0.4;
     const friction = 0.993;
-    const maxBodies = 45;
+    const maxBodies = isMobile ? 22 : 45;
     let nextId = 0;
 
     const spawnBody = (): PhysicsBody => {
       const coin = COINS[Math.floor(Math.random() * COINS.length)];
-      const coinSize = 65 + Math.random() * 40;
+      const coinSize = isMobile ? 38 + Math.random() * 20 : 65 + Math.random() * 40;
+      const width = boundsRef.current.width;
       return {
         id: nextId++,
-        x: Math.random() * (width - 120) + 60,
+        x: Math.random() * (width - coinSize) + coinSize / 2,
         y: -80 - Math.random() * 250,
-        vx: (Math.random() - 0.5) * 6,
+        vx: (Math.random() - 0.5) * (isMobile ? 3.8 : 6),
         vy: Math.random() * 4 + 2,
         angle: Math.random() * Math.PI * 2,
         angularVel: (Math.random() - 0.5) * 0.1,
@@ -87,6 +95,7 @@ function PhysicsCanvas() {
 
     const update = () => {
       const b = bodiesRef.current;
+      const { width, height } = boundsRef.current;
 
       for (const body of b) {
         body.vy += gravity;
@@ -187,19 +196,29 @@ function PhysicsCanvas() {
       },
     });
 
+    let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+    const handleResize = () => {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        updateBounds();
+      }, 150);
+    };
+    window.addEventListener("resize", handleResize);
+
     animRef.current = requestAnimationFrame(update);
 
     return () => {
       cancelAnimationFrame(animRef.current);
       trigger.kill();
+      window.removeEventListener("resize", handleResize);
+      if (resizeTimer) clearTimeout(resizeTimer);
     };
   }, []);
 
   return (
     <div
       ref={containerRef}
-      className="relative w-full overflow-hidden"
-      style={{ height: 600 }}
+      className="relative w-full overflow-hidden h-[340px] sm:h-[420px] md:h-[600px]"
     >
       {bodies.map((body) => (
         <div
@@ -260,7 +279,7 @@ export default function Footer() {
     <footer
       ref={footerRef}
       id="contact"
-      className="relative pt-20 md:pt-32"
+      className="relative pt-20 md:pt-32 scroll-mt-24"
       style={{ background: "var(--background-dark)" }}
       data-theme-bg="#EFF1F3"
       data-theme-bg-dark="#0B1120"

@@ -138,7 +138,7 @@ export default function Skills() {
   return (
     <section
       id="skills"
-      className="relative py-20 md:py-32 overflow-hidden"
+      className="relative py-20 md:py-32 overflow-hidden scroll-mt-24"
       data-theme-bg="#F2F4F6"
       data-theme-bg-dark="#0E1629"
     >

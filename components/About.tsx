@@ -65,7 +65,7 @@ export default function About() {
     <section
       ref={sectionRef}
       id="about"
-      className="relative py-24 md:py-40 px-6 md:px-10"
+      className="relative py-24 md:py-40 px-6 md:px-10 scroll-mt-24"
       data-theme-bg="#F0F2F4"
       data-theme-bg-dark="#111827"
     >

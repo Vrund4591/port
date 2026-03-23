@@ -58,17 +58,26 @@ export default function Projects() {
     if (!section || !track) return;
     if (typeof window === "undefined") return;
 
-    // Kill existing triggers bound to this section and its children before rebuilding.
+    // Kill only horizontal-project triggers from previous desktop setups.
     ScrollTrigger.getAll().forEach((st) => {
       const triggerEl = st.trigger as Element | undefined;
-      if (triggerEl && (triggerEl === section || section.contains(triggerEl))) {
+      const isProjectsPin = triggerEl === section || st.vars?.trigger === section;
+      const isProjectsHorizontalChild =
+        Boolean(st.vars?.containerAnimation) &&
+        Boolean(triggerEl) &&
+        section.contains(triggerEl as Element);
+
+      if (isProjectsPin || isProjectsHorizontalChild) {
         st.kill();
       }
     });
 
-    // Only do horizontal scroll on desktop
-    if (window.innerWidth < 768) {
+    // Only do horizontal scroll on larger screens.
+    if (window.innerWidth < 1024) {
       gsap.set(track, { x: 0 });
+      gsap.set(track.querySelectorAll(".project-card"), {
+        clearProps: "xPercent,yPercent,rotation,transform",
+      });
       return;
     }
 
@@ -154,7 +163,7 @@ export default function Projects() {
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
 
-      mm.add("(max-width: 767px)", () => {
+      mm.add("(max-width: 1023px)", () => {
         const cardElements = track.querySelectorAll<HTMLDivElement>(".project-card");
         cardElements.forEach((card) => {
           gsap.fromTo(
@@ -198,7 +207,7 @@ export default function Projects() {
     <section
       ref={sectionRef}
       id="projects"
-      className="relative"
+      className="relative scroll-mt-24"
       data-theme-bg="#E8EAED"
       data-theme-bg-dark="#0D1321"
     >
@@ -264,11 +273,11 @@ export default function Projects() {
       {/* The horizontal track — flex row with all items inline */}
       <div
         ref={trackRef}
-        className="flex flex-col md:flex-row md:flex-nowrap md:items-center md:min-h-screen px-6 py-24 md:py-0 md:px-0 gap-8 md:gap-0"
+        className="flex flex-col lg:flex-row lg:flex-nowrap lg:items-center lg:min-h-screen px-6 py-20 lg:py-0 lg:px-0 gap-8 lg:gap-0"
       >
         {/* Intro text */}
-        <div className="projects-intro flex-shrink-0 md:w-[50vw] flex items-center justify-center px-6 md:px-20">
-          <div className="text-center md:text-left">
+        <div className="projects-intro w-full max-w-[42rem] mx-auto lg:max-w-none lg:flex-shrink-0 lg:w-[50vw] flex items-center justify-center px-2 lg:px-20">
+          <div className="text-center lg:text-left">
             <h2
               className="text-[var(--heading)]"
               style={{
@@ -300,10 +309,10 @@ export default function Projects() {
         {projects.map((project, idx) => (
           <div
             key={idx}
-            className="project-card relative flex-shrink-0 md:w-[40vw] lg:w-[35vw] md:mx-8 md:my-[10vh]"
+            className="project-card relative w-full max-w-[42rem] mx-auto lg:max-w-none lg:flex-shrink-0 lg:w-[40vw] xl:w-[35vw] lg:mx-8 lg:my-[10vh]"
           >
-            <div className="relative bg-[var(--accent)] rounded-lg p-8 md:p-10 h-full flex flex-col overflow-hidden"
-              style={{ minHeight: "420px" }}
+            <div
+              className="relative bg-[var(--accent)] rounded-lg p-6 sm:p-8 lg:p-10 h-full flex flex-col overflow-hidden min-h-[360px] sm:min-h-[420px]"
             >
               <PixelCorners color="var(--heading)" size={6} />
 
@@ -391,7 +400,7 @@ export default function Projects() {
         ))}
 
         {/* Outro text */}
-        <div className="projects-outro flex-shrink-0 md:w-[40vw] flex items-center justify-center px-6 md:px-16">
+        <div className="projects-outro w-full max-w-[42rem] mx-auto lg:max-w-none lg:flex-shrink-0 lg:w-[40vw] flex items-center justify-center px-2 lg:px-16">
           <div className="text-center">
             <p
               className="text-[var(--heading)]"

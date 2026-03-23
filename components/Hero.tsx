@@ -44,7 +44,7 @@ export default function Hero() {
     <section
       ref={sectionRef}
       id="hero"
-      className="relative h-screen flex items-center justify-center overflow-hidden"
+      className="relative min-h-[100svh] flex items-center justify-center overflow-hidden"
       data-theme-bg="#F8F9FA"
       data-theme-bg-dark="#0F172A"
     >
